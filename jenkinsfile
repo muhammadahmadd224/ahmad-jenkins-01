@@ -2,18 +2,17 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER = 'ahmadkhan0011'    // Your Docker Hub username
-        IMAGE_NAME = 'node-app-1'           // Image name
-        IMAGE_TAG = 'v2'                    // New tag for updated image
-        GIT_REPO = 'https://github.com/muhammadahmadd224/CICD-PIPELINE.git'  // Your GitHub repo
+        DOCKERHUB_USER = 'ahmadkhan0011'
+        IMAGE_NAME = 'node-app-1'
+        IMAGE_TAG = 'v2'
+        GIT_REPO = 'https://github.com/muhammadahmadd224/CICD-PIPELINE.git'
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 echo '📥 Checking out code from GitHub...'
-                git branch: 'main', url: "${GIT_REPO}"
+                git branch: 'main', url: "${GIT_REPO}", credentialsId: 'github-token'
             }
         }
 
@@ -46,7 +45,7 @@ pipeline {
                 sh """
                 docker stop ${IMAGE_NAME} || true
                 docker rm ${IMAGE_NAME} || true
-                docker run -d -p 3001:3001 --name ${IMAGE_NAME} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                docker run -d -p 3001:3000 --name ${IMAGE_NAME} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
                 """
             }
         }
@@ -60,11 +59,7 @@ pipeline {
     }
 
     post {
-        success {
-            echo '✅ Pipeline completed successfully!'
-        }
-        failure {
-            echo '❌ Pipeline failed!'
-        }
+        success { echo '✅ Pipeline completed successfully!' }
+        failure { echo '❌ Pipeline failed!' }
     }
 }
