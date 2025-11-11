@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_USER = 'ahmadkhan0011'    // 🔹 your Docker Hub username
+        IMAGE_NAME = 'node-app-1'           // 🔹 image name (same as before)
+        IMAGE_TAG = 'v1'
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                echo '📥 Checking out code from GitHub...'
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo '🐳 Building Docker image...'
+                sh 'docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} .'
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                echo '🔐 Logging in to Docker Hub...'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                echo '🚀 Pushing Docker image...'
+                sh 'docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}'
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                echo '🧹 Cleaning up local Docker images...'
+                sh 'docker rmi ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} || true'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline completed successfully!'
+        }
+        failure {
+            echo '❌ Pipeline failed!'
+        }
+    }
+}
