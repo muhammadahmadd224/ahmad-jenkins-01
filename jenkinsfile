@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = "node-image"
         EMAIL = "ym833641@gmail.com"
         PORT = "3000"
-        GIT_URL = "https://github.com/muhammadahmadd224/CICD-PIPELINE.git"
+        GIT_URL = "https://github.com/muhammadahmadd224/ahmad-jenkins-01.git"
     }
 
     stages {
