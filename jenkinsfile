@@ -2,64 +2,80 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER = 'ahmadkhan0011'
-        IMAGE_NAME = 'node-app-1'
-        IMAGE_TAG = 'v2'
-        GIT_REPO = 'https://github.com/muhammadahmadd224/CICD-PIPELINE.git'
+        CONTAINER_NAME = "docker-node-app"
+        IMAGE_NAME = "node-image"
+        EMAIL = "ym833641@gmail.com"
+        PORT = "3000"
+        GIT_URL = "https://github.com/muhammadahmadd224/CICD-PIPELINE.git"
     }
 
     stages {
-        stage('Checkout Code') {
+
+        stage('Clone Repository') {
             steps {
-                echo '📥 Checking out code from GitHub...'
-                git branch: 'main', url: "${GIT_REPO}", credentialsId: 'github-token'
+                git branch: 'main', url: "${GIT_URL}"
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo '🐳 Building Docker image...'
-                sh "docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
-        stage('Login to Docker Hub') {
+        stage('Stop and Remove Previous Container') {
             steps {
-                echo '🔐 Logging in to Docker Hub...'
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh 'echo $PASS | docker login -u $USER --password-stdin'
-                }
-            }
-        }
-
-        stage('Push Image to Docker Hub') {
-            steps {
-                echo '🚀 Pushing Docker image...'
-                sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                sh '''
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                '''
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                echo '▶️ Running Docker container...'
-                sh """
-                docker stop ${IMAGE_NAME} || true
-                docker rm ${IMAGE_NAME} || true
-                docker run -d -p 3001:3000 --name ${IMAGE_NAME} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                """
+                sh '''
+                    docker run -d -p ${PORT}:${PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}
+                '''
             }
         }
 
-        stage('Clean Up Local Images') {
+        stage('Send Email Notification') {
             steps {
-                echo '🧹 Cleaning up local Docker images...'
-                sh "docker rmi ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} || true"
+                emailext(
+                    subject: "Jenkins Deployment Successful",
+                    body: """
+                    ✅ Your Node.js Docker App has been deployed successfully!
+
+                    Application URL: http://18.206.135.160:${PORT}/
+                    Jenkins Job: ${env.JOB_NAME}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Build URL: ${env.BUILD_URL}
+
+                    Regards,
+                    Jenkins CI/CD Pipeline
+                    """,
+                    to: "${EMAIL}"
+                )
             }
         }
     }
 
     post {
-        success { echo '✅ Pipeline completed successfully!' }
-        failure { echo '❌ Pipeline failed!' }
+        failure {
+            emailext(
+                subject: "❌ Jenkins Deployment Failed",
+                body: """
+                The Jenkins build has failed.
+
+                Job: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+                Build URL: ${env.BUILD_URL}
+
+                Please check the Jenkins console output for details.
+                """,
+                to: "${EMAIL}"
+            )
+        }
     }
 }
