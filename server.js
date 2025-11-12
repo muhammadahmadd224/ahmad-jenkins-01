@@ -7,5 +7,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`App running on http://18.206.135.160:808:${port}`);
+  console.log(`App running on http://18.206.135.160:8080:${port}`);
 });
