@@ -48,7 +48,7 @@ pipeline {
                     ✅ Your Node.js Docker App has been deployed successfully!
 
                     Application URL: http://18.206.135.160:${PORT}/
-                    Jenkins Job: ${env.JOB_NAME}
+                   Jenkins Job: ${env.JOB_NAME}
                     Build Number: ${env.BUILD_NUMBER}
                     Build URL: ${env.BUILD_URL}
 
@@ -61,19 +61,7 @@ pipeline {
         }
     }
 
-    post {
-        failure {
-            emailext(
-                subject: "❌ Jenkins Deployment Failed",
-                body: """
-                The Jenkins build has failed.
-
-                Job: ${env.JOB_NAME}
-                Build Number: ${env.BUILD_NUMBER}
-                Build URL: ${env.BUILD_URL}
-
-                Please check the Jenkins console output for details.
-                """,
+  
                 to: "${EMAIL}"
             )
         }
