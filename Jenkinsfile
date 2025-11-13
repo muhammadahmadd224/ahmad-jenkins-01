@@ -47,7 +47,7 @@ docker run -d -p ${PORT}:${PORT} --name ${CONTAINER_NAME} ${IMAGE_NAME}
                     body: """\
 ✅ Your Node.js Docker App has been deployed successfully!
 
-Application URL: http://18.206.135.160:${PORT}/
+Application URL: http://3.238.12.54:8080:${PORT}/
 Jenkins Job: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Build URL: ${env.BUILD_URL}
