@@ -72,8 +72,7 @@ Job: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Build URL: ${env.BUILD_URL}
 
-Please check the Jenkins console output for details.
-""",
+Please check the Jenkins console output for more details.""",
                 to: "${EMAIL}"
             )
         }
